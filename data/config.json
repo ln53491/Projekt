@@ -1,0 +1,12 @@
+{
+	"interval": 1.0,
+	"seed": 0,
+	"dir": "/home/luka/Documents/Faks/Projekt/data/",
+	"roadnetFile": "example_1/roadnet.json",
+	"flowFile": "example_1/flow.json",
+	"rlTrafficLight": true,
+	"laneChange": false,
+	"saveReplay": true,
+	"roadnetLogFile": "replay_roadnet_best.json",
+	"replayLogFile": "replay_best.txt"
+}
