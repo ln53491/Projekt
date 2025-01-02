@@ -11,5 +11,7 @@
     <Registry>
         <Entry key="population.size">20</Entry>
         <Entry key="term.maxgen">20</Entry>
+        <!-- ako postavljeno, simuliraj žuto svijetlo N koraka simulacije nakon promjene faze semafora -->
+        <Entry key="yellow.light">5</Entry>
     </Registry>
 </ECF>

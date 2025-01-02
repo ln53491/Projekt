@@ -9,6 +9,10 @@ typedef std::map<std::string, int> VehicleLaneMap;
 
 using namespace CityFlow;
 
+void TrafficEvalOp::registerParameters(StateP state) {
+    state->getRegistry()->registerEntry("yellow.light", (voidP) (new int), ECF::INT);
+}
+
 bool TrafficEvalOp::initialize(StateP state) {
     // initialize engine
     std::string engineConfig = "/home/luka/Documents/Faks/Projekt/data/config.json";
@@ -17,6 +21,11 @@ bool TrafficEvalOp::initialize(StateP state) {
     this->simulationSteps = 150;
     setReplay(false);
 
+    // load yellow light duration value from config registry
+    if (state->getRegistry()->isModified("yellow.light")) {
+        voidP yellowLightPtr = state->getRegistry()->getEntry("yellow.light");
+        this->yellowLight = *((int*) yellowLightPtr.get());
+    }
     return true;
 }
 
@@ -25,11 +34,9 @@ FitnessP TrafficEvalOp::evaluate(IndividualP individual) {
     trafficEngine->reset();
     Tree::Tree* tree = (Tree::Tree*) individual->getGenotype().get();
 
-    // keep track of previous tree output
-    double prevTreeOutput = 0;
-
-    // cumulative quantity of waiting vehicles
-    int totalWaitingVehicles = 0;
+    double prevTreeOutput = 0;      // keep track of previous tree output
+    double yellowLightTimer = 0;    // turn on yellow light after every decision
+    int totalWaitingVehicles = 0;   // cumulative quantity of waiting vehicles
 
     // go through all simulation steps
     for (int step = 0; step < simulationSteps; step++) {
@@ -41,10 +48,14 @@ FitnessP TrafficEvalOp::evaluate(IndividualP individual) {
             if (it->second != 0) totalWaitingVehicles += it->second;
         }
         // map a decision only if it differs from the previous
-        if (treeOutput != prevTreeOutput) {
+        if (treeOutput != prevTreeOutput && yellowLightTimer == 0) {
             mapDecision(treeOutput);
             prevTreeOutput = treeOutput;
+            yellowLightTimer = this->yellowLight;
         }
+        // yellow light countdown
+        if (yellowLightTimer > 0) yellowLightTimer--;
+
         // std::cout << "Tree output for step " << step + 1 << ": " << treeOutput << std::endl;
         trafficEngine->nextStep();
     }
@@ -65,7 +76,6 @@ double TrafficEvalOp::evaluateTree(Tree::Tree* tree) {
     std::string roadsToIgnorePrefix = "road_1_1_";
 
     // put simulator values into tree terminals set
-    int index = 0;
     for (auto it = waitingVehicles.begin(); it != waitingVehicles.end(); it++) {
         if (it->first.compare(0, roadsToIgnorePrefix.size(), roadsToIgnorePrefix) != 0) {
             terminalsX.push_back(it->second);

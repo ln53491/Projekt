@@ -16,7 +16,6 @@ void saveBestReplay(StateP state) {
     trafficEvalOp->evaluate(bestOfRun);
 }
 
-
 int main() {
     StateP state (new State);
     state->setEvalOp(new TrafficEvalOp);

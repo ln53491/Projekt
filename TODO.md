@@ -4,8 +4,6 @@ Praćenje potrebnih i gotovih značajki projekta.
 
 ### Todo
 
-- [ ] Dodati "žuto svijetlo"
-    - mogućnost konfiguracije u config.xml hoće li postojati ili ne (te koliko će trajati ako da)
 - [ ] Odvojiti engine od klase evaluatora
     - ukloniti stvaranje instance enginea u samom evaluatoru
 - [ ] Riješiti se hardkodova vezano za topologiju primjera
@@ -14,6 +12,8 @@ Praćenje potrebnih i gotovih značajki projekta.
 
 ### Gotovo ✓
 
+- [x] Dodati "žuto svijetlo"
+    - mogućnost konfiguracije u config.xml hoće li postojati ili ne (te koliko će trajati ako da)
 - [x] Normalizacija fitnessa
     - trenutno je minimum fitnessa **time(auti_postoje_na_mapi) - time(auti_cekaju_na_semaforu)**
     - bolje bi bilo da je minimum 0 odnosno da se broji samo **time(auti_cekaju_na_semaforu)**

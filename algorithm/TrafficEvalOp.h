@@ -11,7 +11,9 @@ class TrafficEvalOp : public EvaluateOp
 {
 private:
     int simulationSteps;
+    int yellowLight = 0;
     Engine* trafficEngine;
+    virtual void registerParameters(StateP state);
     double evaluateTree(Tree::Tree* tree);
     void mapDecision(double treeOutput);
 public:
