@@ -28,10 +28,18 @@ FitnessP TrafficEvalOp::evaluate(IndividualP individual) {
     // keep track of previous tree output
     double prevTreeOutput = 0;
 
+    // cumulative quantity of waiting vehicles
+    int totalWaitingVehicles = 0;
+
     // go through all simulation steps
     for (int step = 0; step < simulationSteps; step++) {
         double treeOutput = evaluateTree(tree);
 
+        // get current number of vehicles waiting on each lane
+        VehicleLaneMap vm = trafficEngine->getLaneWaitingVehicleCount();
+        for (auto it = vm.begin(); it != vm.end(); it++) {
+            if (it->second != 0) totalWaitingVehicles += it->second;
+        }
         // map a decision only if it differs from the previous
         if (treeOutput != prevTreeOutput) {
             mapDecision(treeOutput);
@@ -43,7 +51,8 @@ FitnessP TrafficEvalOp::evaluate(IndividualP individual) {
 
     // calculate fitness
     FitnessP fitness (new FitnessMin);
-    fitness->setValue(trafficEngine->getAverageTravelTime());
+    double averageWaitingTime = totalWaitingVehicles / trafficEngine->getVehicles().size();
+    fitness->setValue(averageWaitingTime);
     return fitness;
 }
 
