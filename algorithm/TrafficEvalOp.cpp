@@ -90,7 +90,7 @@ double TrafficEvalOp::evaluateTree(Tree::Tree* tree) {
         tree->setTerminalValue("X" + std::to_string(i), &terminalsX[i]);
         tree->setTerminalValue("Y" + std::to_string(i), &terminalsY[i]);
         // std::cout << "X" << i << ": " << terminalsX[i] << std::endl;
-        // std::cout << "X" << i << ": " << terminalsY[i] << std::endl;
+        // std::cout << "Y" << i << ": " << terminalsY[i] << std::endl;
     }
     // evaluate tree
     double result = 0;
@@ -100,7 +100,7 @@ double TrafficEvalOp::evaluateTree(Tree::Tree* tree) {
 
 void TrafficEvalOp::mapDecision(double treeOutput) {
     std::string intersectionId = "intersection_1_1";
-    std::vector<int> phaseIndices = {1, 2, 3, 4, 5, 6, 7, 8};
+    std::vector<int> phaseIndices = {0, 1, 2, 3, 4, 5, 6, 7};
 
     // convert to int and clip to range of phaseIndices
     int phaseIndex = std::max(phaseIndices.front(), std::min((int)treeOutput, phaseIndices.back()));

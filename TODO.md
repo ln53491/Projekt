@@ -4,14 +4,17 @@ Praćenje potrebnih i gotovih značajki projekta.
 
 ### Todo
 
+- [ ] Napravi da custom ECF terminal učitava dinamički vrijednosti iz JSON roadnet filea
+- [ ] Napravi custom ECF terminal
+    - zapravo array već postojećih vrijednosti (X,Y...)
 - [ ] Odvojiti engine od klase evaluatora
     - ukloniti stvaranje instance enginea u samom evaluatoru
 - [ ] Riješiti se hardkodova vezano za topologiju primjera
     - trenutno su svi semafori/ceste hardkodirani u evaluatoru, umjesto da budu dinamički učitani iz JSON-a mape
-- [ ] Nađi i isprobaj neku kompleksniju topologiju od demo mape
 
 ### Gotovo ✓
 
+- [X] Nađi i isprobaj neku kompleksniju topologiju od demo mape
 - [x] Dodati "žuto svijetlo"
     - mogućnost konfiguracije u config.xml hoće li postojati ili ne (te koliko će trajati ako da)
 - [x] Normalizacija fitnessa
