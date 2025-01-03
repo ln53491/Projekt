@@ -18,7 +18,7 @@ Praćenje potrebnih i gotovih značajki projekta.
 - [x] Dodati "žuto svijetlo"
     - mogućnost konfiguracije u config.xml hoće li postojati ili ne (te koliko će trajati ako da)
 - [x] Normalizacija fitnessa
-    - trenutno je minimum fitnessa **time(auti_postoje_na_mapi) - time(auti_cekaju_na_semaforu)**
+    - trenutno je minimum fitnessa **time(auti_postoje_na_mapi)**
     - bolje bi bilo da je minimum 0 odnosno da se broji samo **time(auti_cekaju_na_semaforu)**
 - [x] Napraviti evaluator prometa
     - fitness => prosječno vrijeme postojanja svih vozila od početka do kraja simulacije
