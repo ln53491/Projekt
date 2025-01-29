@@ -1,8 +1,7 @@
 #ifndef TrafficEvalOp_h
 #define TrafficEvalOp_h
 
-#include "engine/engine.h"
-#include "utility/optionparser.h"
+#include "Simulator.h"
 #include <memory>
 
 using namespace CityFlow;
@@ -10,16 +9,14 @@ using namespace CityFlow;
 class TrafficEvalOp : public EvaluateOp
 {
 private:
-    int simulationSteps;
-    int yellowLight = 0;
-    Engine* trafficEngine;
+    bool baselineMode;
     virtual void registerParameters(StateP state);
     double evaluateTree(Tree::Tree* tree);
-    void mapDecision(double treeOutput);
+    int makeDecision(double result);
 public:
-    FitnessP evaluate(IndividualP individual);
+    Simulator* simulator;
     bool initialize(StateP);
-    void setReplay(bool save);
+    FitnessP evaluate(IndividualP individual);
 };
 
 #endif // TestEvalOp_h

@@ -6,13 +6,14 @@
 #include <ctime>
 #include "ECF/ECF.h"
 #include "TrafficEvalOp.cpp"
+#include "Simulator.cpp"
 
 using namespace CityFlow;
 
 void saveBestReplay(StateP state) {
     IndividualP bestOfRun = state->getHoF()->getBest()[0];
     TrafficEvalOp* trafficEvalOp = (TrafficEvalOp*) state->getEvalOp().get();
-    trafficEvalOp->setReplay(true);
+    trafficEvalOp->simulator->setSaveReplay(true);
     trafficEvalOp->evaluate(bestOfRun);
 }
 

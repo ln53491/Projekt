@@ -1,17 +1,30 @@
 <ECF>
     <Genotype>
         <Tree>
+            <Entry key="initmaxdepth">5</Entry>
+            <Entry key="initmindepth">2</Entry>
             <Entry key="mindepth">2</Entry>
-            <Entry key="maxdepth">6</Entry>
             <Entry key="functionset">+ - * / min max</Entry>
             <!-- X => broj vozila na semaforu; Y => broj ukupnih vozila po traci -->
-            <Entry key="terminalset">X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13 X14 X15 X16 X17 X18 X19 X20 X21 X22 X23 X24 X25 X26 X27 Y0 Y1 Y2 Y3 Y4 Y5 Y6 Y7 Y8 Y9 Y10 Y11 Y12 Y13 Y14 Y15 Y16 Y17 Y18 Y19 Y20 Y21 Y22 Y23 Y24 Y25 Y26 Y27</Entry>
+            <Entry key="terminalset">X0 X1 X2 X3 X4 X5 X6 X7 X8 X9 X10 X11 X12 X13 X14 X15 X16 X17 X18 X19</Entry>
         </Tree>
     </Genotype>
     <Registry>
-        <Entry key="population.size">50</Entry>
-        <Entry key="term.maxgen">30</Entry>
-        <!-- ako postavljeno, simuliraj žuto svijetlo N koraka simulacije nakon promjene faze semafora -->
-        <Entry key="yellow.light">10</Entry>
+        <Entry key="randomizer.seed">1</Entry>
+        <Entry key="population.demes">10</Entry>
+        <Entry key="migration.freq">10</Entry>
+        <Entry key="migration.number">5</Entry>
+        <Entry key="population.size">100</Entry>
+        <Entry key="term.stagnation">10</Entry>
+        <!-- <Entry key="term.maxgen">10</Entry> -->
+        <Entry key="baseline.mode">0</Entry>
+        <!-- postavke simulatora -->
+        <Entry key="simulator.config">/home/luka/Documents/Faks/Projekt/data/example_2/config.json</Entry>
+        <Entry key="simulator.steps">160</Entry>
+        <Entry key="simulator.red.light">2</Entry>
+        <Entry key="simulator.yellow.light">2</Entry>
     </Registry>
 </ECF>
+
+<!-- baseline: 57.2 -->
+<!-- bez zutog: 44.8 -->

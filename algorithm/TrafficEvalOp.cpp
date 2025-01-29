@@ -1,96 +1,99 @@
 #include "ECF/ECF.h"
-#include "engine/engine.h"
-#include "utility/optionparser.h"
+#include "Simulator.h"
 #include "TrafficEvalOp.h"
 #include <vector>
+#include <cmath>
 #include <algorithm>
-
-typedef std::map<std::string, int> VehicleLaneMap;
+#include <numeric>
 
 using namespace CityFlow;
 
-void TrafficEvalOp::registerParameters(StateP state) {
-    state->getRegistry()->registerEntry("yellow.light", (voidP) (new int), ECF::INT);
+void TrafficEvalOp::registerParameters(StateP state)
+{
+    state->getRegistry()->registerEntry("baseline.mode", (voidP) (new int), ECF::INT);
+    state->getRegistry()->registerEntry("simulator.red.light", (voidP) (new int), ECF::INT);
+    state->getRegistry()->registerEntry("simulator.yellow.light", (voidP) (new int), ECF::INT);
+    state->getRegistry()->registerEntry("simulator.steps", (voidP) (new int), ECF::INT);
+    state->getRegistry()->registerEntry("simulator.config", (voidP) (new std::string), ECF::STRING);
+    
 }
 
-bool TrafficEvalOp::initialize(StateP state) {
-    // initialize engine
-    std::string engineConfig = "/home/luka/Documents/Faks/Projekt/data/config.json";
-    size_t threadNum = 1;
-    this->trafficEngine = new Engine(engineConfig, threadNum);
-    this->simulationSteps = 150;
-    setReplay(false);
-
-    // load yellow light duration value from config registry
-    if (state->getRegistry()->isModified("yellow.light")) {
-        voidP yellowLightPtr = state->getRegistry()->getEntry("yellow.light");
-        this->yellowLight = *((int*) yellowLightPtr.get());
-    }
+bool TrafficEvalOp::initialize(StateP state)
+{
+    baselineMode = (bool) *((int*) state->getRegistry()->getEntry("baseline.mode").get());
+    // create simulator instance
+    std::string simulatorConfig = *((std::string*) state->getRegistry()->getEntry("simulator.config").get());
+    int simulatorSteps = *((int*) state->getRegistry()->getEntry("simulator.steps").get());
+    int yellowLight = *((int*) state->getRegistry()->getEntry("simulator.yellow.light").get());
+    int redLight = *((int*) state->getRegistry()->getEntry("simulator.red.light").get());
+    
+    simulator = new Simulator(simulatorConfig, simulatorSteps);
+    simulator->setYellowLight(yellowLight);
+    simulator->setRedLight(yellowLight);
     return true;
 }
 
-FitnessP TrafficEvalOp::evaluate(IndividualP individual) {
-    // reset engine and average travel time
-    trafficEngine->reset();
-    Tree::Tree* tree = (Tree::Tree*) individual->getGenotype().get();
+FitnessP TrafficEvalOp::evaluate(IndividualP individual)
+{
+    simulator->reset();
+    std::string intersectionId = simulator->getIntersectionId();
+    Tree::Tree* currTree = (Tree::Tree*) individual->getGenotype().get();
 
-    double prevTreeOutput = 0;      // keep track of previous tree output
-    double yellowLightTimer = 0;    // turn on yellow light after every decision
-    int totalWaitingVehicles = 0;   // cumulative quantity of waiting vehicles
+    int prevDecision = 0;           // keep track of previous decision
+    int totalWaitingVehicles = 0;   // cumulative number of waiting vehicles
 
-    // go through all simulation steps
-    for (int step = 0; step < simulationSteps; step++) {
-        double treeOutput = evaluateTree(tree);
-
-        // get current number of vehicles waiting on each lane
-        VehicleLaneMap vm = trafficEngine->getLaneWaitingVehicleCount();
-        for (auto it = vm.begin(); it != vm.end(); it++) {
-            if (it->second != 0) totalWaitingVehicles += it->second;
+    int step = 0;
+    while (step < simulator->getSteps()) {
+        if (baselineMode) {
+            if (step % (int)(simulator->getSteps() / simulator->getTlPhases()) == 0) {
+                simulator->setTrafficLightPhase(intersectionId, prevDecision);
+                std::cout << "Set phase " << prevDecision << " at step " << step << std::endl;
+                prevDecision++;
+            }
+            std::vector<double> vhm = simulator->getLaneWaitingVehicles_rel();
+            totalWaitingVehicles += std::accumulate(vhm.begin(), vhm.end(), 0.0);
         }
-        // map a decision only if it differs from the previous
-        if (treeOutput != prevTreeOutput && yellowLightTimer == 0) {
-            mapDecision(treeOutput);
-            prevTreeOutput = treeOutput;
-            yellowLightTimer = this->yellowLight;
-        }
-        // yellow light countdown
-        if (yellowLightTimer > 0) yellowLightTimer--;
+        else {
+            // simulate yellow light
+            simulator->closeIntersection();
+            for (int i = 0; i < simulator->getYellowLight(); i++) {
+                simulator->nextStep();
+                step++;
+                std::vector<double> vhm = simulator->getLaneWaitingVehicles_rel();
+                totalWaitingVehicles += std::accumulate(vhm.begin(), vhm.end(), 0.0);   
+            }
 
-        // std::cout << "Tree output for step " << step + 1 << ": " << treeOutput << std::endl;
-        trafficEngine->nextStep();
+            double treeOutput = evaluateTree(currTree);
+            int currDecision = makeDecision(treeOutput);
+            // change phase
+            // std::cout << "Set phase " << currDecision << " at step " << step << std::endl;
+            simulator->setTrafficLightPhase(intersectionId, currDecision);
+            for (int j = 0; j < simulator->getRedLight(); j++) {
+                simulator->nextStep();
+                step++;
+                std::vector<double> vhm = simulator->getLaneWaitingVehicles_rel();
+                totalWaitingVehicles += std::accumulate(vhm.begin(), vhm.end(), 0.0);
+            }
+        }
+        simulator->nextStep();
+        step++;
     }
-
     // calculate fitness
     FitnessP fitness (new FitnessMin);
-    double averageWaitingTime = totalWaitingVehicles / trafficEngine->getVehicles().size();
-    fitness->setValue(averageWaitingTime);
+    // double averageWaitingTime = totalWaitingVehicles / simulator->getVehicles().size();
+    fitness->setValue(totalWaitingVehicles);
     return fitness;
 }
 
-double TrafficEvalOp::evaluateTree(Tree::Tree* tree) {
+double TrafficEvalOp::evaluateTree(Tree::Tree* tree)
+{
     // relevant simulator data
-    VehicleLaneMap waitingVehicles = trafficEngine->getLaneWaitingVehicleCount();
-    VehicleLaneMap totalVehicles = trafficEngine->getLaneVehicleCount();
-    std::vector<double> terminalsX;
-    std::vector<double> terminalsY;
-    std::string roadsToIgnorePrefix = "road_1_1_";
+    std::vector<double> terminalsX = simulator->getLaneVehicles_rel();
+    // std::vector<double> terminalsY = simulator->getLaneVehicles_rel();
 
-    // put simulator values into tree terminals set
-    for (auto it = waitingVehicles.begin(); it != waitingVehicles.end(); it++) {
-        if (it->first.compare(0, roadsToIgnorePrefix.size(), roadsToIgnorePrefix) != 0) {
-            terminalsX.push_back(it->second);
-        }
-    }
-    for (auto it = totalVehicles.begin(); it != totalVehicles.end(); it++) {
-        if (it->first.compare(0, roadsToIgnorePrefix.size(), roadsToIgnorePrefix) != 0) {
-            terminalsY.push_back(it->second);
-        }
-    }
-    for (int i = 0; i < terminalsX.size(); i++) {
+    for (int i = 0; i < (int)terminalsX.size(); i++) {
         tree->setTerminalValue("X" + std::to_string(i), &terminalsX[i]);
-        tree->setTerminalValue("Y" + std::to_string(i), &terminalsY[i]);
-        // std::cout << "X" << i << ": " << terminalsX[i] << std::endl;
-        // std::cout << "Y" << i << ": " << terminalsY[i] << std::endl;
+        // tree->setTerminalValue("Y" + std::to_string(i), &terminalsY[i]);
     }
     // evaluate tree
     double result = 0;
@@ -98,17 +101,10 @@ double TrafficEvalOp::evaluateTree(Tree::Tree* tree) {
     return result;
 }
 
-void TrafficEvalOp::mapDecision(double treeOutput) {
-    std::string intersectionId = "intersection_1_1";
-    std::vector<int> phaseIndices = {0, 1, 2, 3, 4, 5, 6, 7};
-
-    // convert to int and clip to range of phaseIndices
-    int phaseIndex = std::max(phaseIndices.front(), std::min((int)treeOutput, phaseIndices.back()));
-
-    // std::cout << "Changing traffic light(s) " << phaseIndex << " of " << intersectionId << std::endl;
-    trafficEngine->setTrafficLightPhase(intersectionId, phaseIndex);
-}
-
-void TrafficEvalOp::setReplay(bool save) {
-    trafficEngine->setSaveReplay(save);
+int TrafficEvalOp::makeDecision(double result)
+{
+    int numPhases = simulator->getTlPhases();
+    int phaseIndex = std::max(0, std::min((int)result, numPhases - 1));
+    // int phaseIndex = ((int)result % numPhases + numPhases) % numPhases;
+    return phaseIndex;
 }
