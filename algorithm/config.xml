@@ -11,20 +11,13 @@
     </Genotype>
     <Registry>
         <Entry key="randomizer.seed">1</Entry>
-        <Entry key="population.demes">10</Entry>
-        <Entry key="migration.freq">10</Entry>
-        <Entry key="migration.number">5</Entry>
         <Entry key="population.size">100</Entry>
-        <Entry key="term.stagnation">10</Entry>
-        <!-- <Entry key="term.maxgen">10</Entry> -->
-        <Entry key="baseline.mode">0</Entry>
+        <Entry key="term.maxgen">10</Entry>
+        <Entry key="baseline.mode">1</Entry>
         <!-- postavke simulatora -->
-        <Entry key="simulator.config">/home/luka/Documents/Faks/Projekt/data/example_2/config.json</Entry>
+        <Entry key="simulator.config">/home/luka/Documents/Faks/Projekt/data/example_1/config.json</Entry>
         <Entry key="simulator.steps">160</Entry>
         <Entry key="simulator.red.light">2</Entry>
         <Entry key="simulator.yellow.light">2</Entry>
     </Registry>
 </ECF>
-
-<!-- baseline: 57.2 -->
-<!-- bez zutog: 44.8 -->

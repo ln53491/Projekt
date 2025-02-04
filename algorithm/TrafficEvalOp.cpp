@@ -15,7 +15,6 @@ void TrafficEvalOp::registerParameters(StateP state)
     state->getRegistry()->registerEntry("simulator.yellow.light", (voidP) (new int), ECF::INT);
     state->getRegistry()->registerEntry("simulator.steps", (voidP) (new int), ECF::INT);
     state->getRegistry()->registerEntry("simulator.config", (voidP) (new std::string), ECF::STRING);
-    
 }
 
 bool TrafficEvalOp::initialize(StateP state)

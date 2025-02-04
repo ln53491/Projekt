@@ -107,6 +107,14 @@ int Simulator::getYellowLight() {
     return yellowLight;
 }
 
+void Simulator::setRedLight(int duration) {
+    redLight = duration;
+}
+
+int Simulator::getRedLight() {
+    return redLight;
+}
+
 int Simulator::getTlPhases() {
     return tlPhases;
 }
